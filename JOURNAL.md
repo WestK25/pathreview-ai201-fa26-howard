@@ -30,7 +30,7 @@ Two problems outside my issue showed up. The pinned `chromadb/chroma:0.4.22` con
 
 ### My decisions and AI-assisted workflow
 
-I delegated the technical issue selection and asked for a Tier 1 issue that I could test deterministically without paid services. I also required one repository and branch for all four units, first-person documentation, passing local checks, and verified CI. Codex compared the tracker with the ledger, traced the existing test, posted my claim, and ran the baseline checks. The course reading links redirected to CodePath sign-in, so the selection used my supplied checklist and the repository's contribution guide. When Codex reached its usage limit after Unit 8, I switched to Claude Code on the same branch. Claude finished the Docker setup and confirmed my ledger row. My visual confirmation and personal scope review are pending.
+I delegated the technical issue selection and asked for a Tier 1 issue that I could test deterministically without paid services. I also required one repository and branch for all four units, first-person documentation, passing local checks, and verified CI. Codex compared the tracker with the ledger, traced the existing test, posted my claim, and ran the baseline checks. The course reading links redirected to CodePath sign-in, so the selection used my supplied checklist and the repository's contribution guide. When Codex reached its usage limit after Unit 8, I switched to Claude Code on the same branch. Claude finished the Docker setup and confirmed my ledger row. After that, I opened `localhost:5173`, logged in with a seeded test account, and saw the dashboard load with three reviews (two completed and one failed). I only checked startup and login, not every feature. I also reviewed the scope and agreed to keep this a test-only change.
 
 ## Unit 8 — Reproduction & solution planning
 
@@ -42,7 +42,7 @@ I delegated the technical issue selection and asked for a Tier 1 issue that I co
 
 **Walkthrough video (recommended):** Not recorded.
 
-**Blockers or open questions:** I can reproduce and test this issue entirely in memory. Full local startup is still waiting for the disk space required by the setup guide.
+**Blockers or open questions:** I can reproduce and test this issue entirely in memory. Full local startup is still waiting for the disk space required by the setup guide. (Update during Unit 9: Colima got PostgreSQL, Redis, migrations, and login working, as described in Unit 7.)
 
 ### Reproduction evidence
 
@@ -70,8 +70,30 @@ All 37 tests passed again (exit 0) after the instruction changed meaning without
 
 **Current progress:** I finished PLAN.md sub-tasks 1–3 in `tests/unit/test_prompt_templates.py` ([commit 9765c15](https://github.com/WestK25/pathreview-ai201-fa26-howard/commit/9765c158c7faf7502a6b936992b249a072e28529)). A module-level `TEMPLATE_SNAPSHOTS` dict records a SHA-256 digest for each of the five `v1` prompts. `test_template_snapshot_content_hash` is now parameterized over those pairs and compares the raw `get_template()` text, and the new `test_every_template_version_has_a_snapshot` compares the registry's `(name, version)` keys with the recorded ones. Codex drafted the digest comparison before reaching its limit, and Claude added the inventory test.
 
-For sub-task 4, I reran the in-memory edits from my plan. Rewording `skills_feedback/v1` failed only `[skills_feedback-v1]`, and adding one newline to `first_impression/v1` failed only `[first_impression-v1]`. Adding an unrecorded `skills_feedback/v2` failed only the inventory test, and once v2 had its own digest both versions passed. Removing `gaps_feedback/v1` failed the inventory test and that snapshot, along with six older `gaps_feedback` checks. On the unchanged registry, the prompt test file has 42 passing tests, `make check` passes, and `make test-unit` reports 380 passed and 53 xfailed.
+For sub-task 4, Claude reran the in-memory edits from my plan. Rewording `skills_feedback/v1` failed only `[skills_feedback-v1]`, and adding one newline to `first_impression/v1` failed only `[first_impression-v1]`. Adding an unrecorded `skills_feedback/v2` failed only the inventory test, and once v2 had its own digest both versions passed. Removing `gaps_feedback/v1` failed the inventory test and that snapshot, along with six older `gaps_feedback` checks. On the unchanged registry, the prompt test file has 42 passing tests, `make check` passes, and `make test-unit` reports 380 passed and 53 xfailed.
 
 **Next steps:** Review the diff myself, open a draft PR against upstream `main`, confirm all five CI jobs, and ask for feedback in the course Slack channel.
 
 **Blockers:** None at this stage.
+
+---
+
+### Check-in 2 (end of week)
+
+**PR link:** [codepath/pathreview-ai201-fa26-howard#116](https://github.com/codepath/pathreview-ai201-fa26-howard/pull/116)
+
+**Branch:** `test/12-versioned-prompt-snapshots`
+
+**What you built:** I replaced a prompt "snapshot" test that only checked the length of an MD5 digest with a recorded SHA-256 snapshot for each released `(name, version)` prompt. Now rewording `skills_feedback/v1`, or even adding a newline to it, fails a test that names that prompt. A second test requires every registered version to have exactly one snapshot, so an intentional prompt change has to go in as a new version with its own digest.
+
+**Tests added or updated:** All changes are in `tests/unit/test_prompt_templates.py`.
+- `test_template_snapshot_content_hash` is now parameterized over the five pairs in `TEMPLATE_SNAPSHOTS` (`first_impression`, `gaps_feedback`, `presentation_feedback`, `projects_feedback`, and `skills_feedback`, all `v1`). It hashes the raw `get_template()` text before any portfolio data is filled in, so wording and whitespace changes both count.
+- `test_every_template_version_has_a_snapshot` is new. It fails when a version has no snapshot or a snapshot has no version, and lists the pairs involved.
+- Edge cases checked by editing the registry in memory: a reworded prompt and a trailing newline each failed only their own pair; an unrecorded `v2` failed only the inventory test and passed once its digest was added; and removing a released `v1` failed the inventory test.
+- Issue #12 is not a seeded bug, so I had no `xfail` marker to remove. All 53 existing `xfail` tests are unchanged.
+
+**Self-review confirmation:** [x] make check passes  [x] make test-unit passes
+
+On the final code commit, `make check` passed (ruff, black on 110 files, and mypy on 76 source files), and `make test-unit` reported 380 passed and 53 xfailed (375 passed on `main`). `make test-integration` collected no tests, which is expected because `tests/integration/` is empty. Locally, vitest under Node 24 timed out loading the jsdom setup file, so I relied on CI for the frontend. All five CI jobs passed on the PR: `lint`, `typecheck`, `test-unit` (380 passed, 53 xfailed), `test-integration`, and `frontend` (18 passed). I reviewed the approach and kept the SHA-256 snapshots and version inventory check. I used ChatGPT to add the PR link to my ledger row, and Claude read the sheet back to confirm it.
+
+**Draft PR feedback received from:** none. I asked for review in the course Slack channel after opening the draft PR. As of November 26, 2026, no one had replied there, and the PR had no GitHub reviews or comments.
