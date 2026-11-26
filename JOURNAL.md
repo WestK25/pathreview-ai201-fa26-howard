@@ -10,7 +10,7 @@
 
 **Branch name:** `test/12-versioned-prompt-snapshots`
 
-**Setup confirmation:** [ ] App runs locally at localhost:5173
+**Setup confirmation:** [x] App runs locally at localhost:5173
 
 **Cohort ledger:** [x] Issue added to cohort ledger
 
@@ -24,11 +24,13 @@ Before the claim, the GitHub issue was open with no comments, assignees, or rela
 
 I used one fork and one branch from upstream `main` at `14578ac9708dcbd94c3258430baddeae621c7e40`. Codex installed the Python 3.12 development dependencies in a local virtual environment and the frontend packages from the lockfile. Matching NumPy to upstream CI's 2.4.6 resolved a type-check error. On the unchanged source, `make check` passed, `make test-unit` reported 375 passed and 53 expected failures, and all 18 frontend tests passed.
 
-Codex verified the rendered login page at `http://localhost:5173/login` in Brave. At this check my Mac had less than the 20 GB of free space listed in the setup guide. The Docker services, database migrations, and seeded login still need verification. [Setup guide](https://github.com/codepath/pathreview-ai201-fa26-howard/blob/main/docs/SETUP.md)
+Codex verified the rendered login page at `http://localhost:5173/login` in Brave, but Docker was not installed at that point. My Mac had about 11 GB free, below the 20 GB in the [setup guide](https://github.com/codepath/pathreview-ai201-fa26-howard/blob/main/docs/SETUP.md), so Claude installed Colima and the Docker CLI through Homebrew instead of Docker Desktop. `docker-compose up -d` brought PostgreSQL and Redis up healthy, `make migrate` applied migrations 001 and 002, and `make seed` created the three test accounts. With `make run` going, `localhost:5173` served the PathReview app, and logging in as `user1@example.com` through the frontend's `/api` proxy returned 200 (a wrong password returned 401).
+
+Two problems outside my issue showed up. The pinned `chromadb/chroma:0.4.22` container exits with a NumPy 2 error, and `/health` reports PostgreSQL and Redis as unhealthy even though login works, which matches seeded issues #61 and #62. I left both alone.
 
 ### My decisions and AI-assisted workflow
 
-I delegated the technical issue selection and asked for a focused contribution that I could check without paid services. Codex compared the tracker with the ledger, traced the existing test, and ran the checks above. The course reading links redirected to CodePath sign-in, so the selection used my supplied checklist and the repository's contribution guide. My visual confirmation and personal scope review are pending.
+I delegated the technical issue selection and asked for a Tier 1 issue that I could test deterministically without paid services. I also required one repository and branch for all four units, first-person documentation, passing local checks, and verified CI. Codex compared the tracker with the ledger, traced the existing test, posted my claim, and ran the baseline checks. The course reading links redirected to CodePath sign-in, so the selection used my supplied checklist and the repository's contribution guide. When Codex reached its usage limit after Unit 8, I switched to Claude Code on the same branch. Claude finished the Docker setup and confirmed my ledger row. My visual confirmation and personal scope review are pending.
 
 ## Unit 8 — Reproduction & solution planning
 
