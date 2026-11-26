@@ -29,3 +29,25 @@ Codex verified the rendered login page at `http://localhost:5173/login` in Brave
 ### My decisions and AI-assisted workflow
 
 I delegated the technical issue selection and asked for a focused contribution that I could check without paid services. Codex compared the tracker with the ledger, traced the existing test, and ran the checks above. The course reading links redirected to CodePath sign-in, so the selection used my supplied checklist and the repository's contribution guide. My visual confirmation and personal scope review are pending.
+
+## Unit 8 — Reproduction & solution planning
+
+### Reproduction evidence
+
+On the issue branch, before any change to the tests or prompts, `make check` passed and `make test-unit` reported 375 passed and 53 expected failures. Running `.venv/bin/pytest -q tests/unit/test_prompt_templates.py` on the unchanged registry gave 37 passed. To isolate the wording check, Codex ran the following command from the repository root using the same virtual environment.
+
+```bash
+.venv/bin/python - <<'PY'
+import pytest
+from rag.generator.prompt_templates import PROMPT_TEMPLATES
+
+versions = PROMPT_TEMPLATES["skills_feedback"]
+original = versions["v1"]
+edited = original.replace("with specific examples", "without specific examples")
+assert edited != original
+versions["v1"] = edited
+raise SystemExit(pytest.main(["-q", "tests/unit/test_prompt_templates.py"]))
+PY
+```
+
+All 37 tests passed again (exit 0) after the instruction changed meaning without a version bump. The edit lived only in that Python process. I expected a failure naming `skills_feedback/v1`. The old `test_template_snapshot_content_hash` checked the type and length of an MD5 digest computed during the test, so it had no saved text or digest to compare. Issue #12 has no seeded `xfail`.
