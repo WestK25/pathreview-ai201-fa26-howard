@@ -32,6 +32,16 @@ I delegated the technical issue selection and asked for a focused contribution t
 
 ## Unit 8 — Reproduction & solution planning
 
+**Reproduction commit link:** [Pre-fix evidence for #12](https://github.com/WestK25/pathreview-ai201-fa26-howard/commit/f24ff8632c90cf0a518024f9ea8a826b0c6301b1)
+
+**Reproduction summary:** Reversing an instruction in `skills_feedback/v1` in memory left all 37 prompt tests passing. The snapshot assertion accepted every 32-character MD5 digest.
+
+**PLAN.md link:** [My solution plan on the working branch](https://github.com/WestK25/pathreview-ai201-fa26-howard/blob/test/12-versioned-prompt-snapshots/PLAN.md)
+
+**Walkthrough video (recommended):** Not recorded.
+
+**Blockers or open questions:** I can reproduce and test this issue entirely in memory. Full local startup is still waiting for the disk space required by the setup guide.
+
 ### Reproduction evidence
 
 On the issue branch, before any change to the tests or prompts, `make check` passed and `make test-unit` reported 375 passed and 53 expected failures. Running `.venv/bin/pytest -q tests/unit/test_prompt_templates.py` on the unchanged registry gave 37 passed. To isolate the wording check, Codex ran the following command from the repository root using the same virtual environment.
