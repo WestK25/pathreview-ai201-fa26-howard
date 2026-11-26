@@ -63,3 +63,15 @@ PY
 ```
 
 All 37 tests passed again (exit 0) after the instruction changed meaning without a version bump. The edit lived only in that Python process. I expected a failure naming `skills_feedback/v1`. The old `test_template_snapshot_content_hash` checked the type and length of an MD5 digest computed during the test, so it had no saved text or digest to compare. Issue #12 has no seeded `xfail`.
+
+## Unit 9 — Solution building & PR submission
+
+### Check-in 1 (mid-week)
+
+**Current progress:** I finished PLAN.md sub-tasks 1–3 in `tests/unit/test_prompt_templates.py` ([commit 9765c15](https://github.com/WestK25/pathreview-ai201-fa26-howard/commit/9765c158c7faf7502a6b936992b249a072e28529)). A module-level `TEMPLATE_SNAPSHOTS` dict records a SHA-256 digest for each of the five `v1` prompts. `test_template_snapshot_content_hash` is now parameterized over those pairs and compares the raw `get_template()` text, and the new `test_every_template_version_has_a_snapshot` compares the registry's `(name, version)` keys with the recorded ones. Codex drafted the digest comparison before reaching its limit, and Claude added the inventory test.
+
+For sub-task 4, I reran the in-memory edits from my plan. Rewording `skills_feedback/v1` failed only `[skills_feedback-v1]`, and adding one newline to `first_impression/v1` failed only `[first_impression-v1]`. Adding an unrecorded `skills_feedback/v2` failed only the inventory test, and once v2 had its own digest both versions passed. Removing `gaps_feedback/v1` failed the inventory test and that snapshot, along with six older `gaps_feedback` checks. On the unchanged registry, the prompt test file has 42 passing tests, `make check` passes, and `make test-unit` reports 380 passed and 53 xfailed.
+
+**Next steps:** Review the diff myself, open a draft PR against upstream `main`, confirm all five CI jobs, and ask for feedback in the course Slack channel.
+
+**Blockers:** None at this stage.
