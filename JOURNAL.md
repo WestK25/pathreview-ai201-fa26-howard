@@ -97,3 +97,32 @@ For sub-task 4, Claude reran the in-memory edits from my plan. Rewording `skills
 On the final code commit, `make check` passed (ruff, black on 110 files, and mypy on 76 source files), and `make test-unit` reported 380 passed and 53 xfailed (375 passed on `main`). `make test-integration` collected no tests, which is expected because `tests/integration/` is empty. Locally, vitest under Node 24 timed out loading the jsdom setup file, so I relied on CI for the frontend. All five CI jobs passed on the PR: `lint`, `typecheck`, `test-unit` (380 passed, 53 xfailed), `test-integration`, and `frontend` (18 passed). I reviewed the approach and kept the SHA-256 snapshots and version inventory check. I used ChatGPT to add the PR link to my ledger row, and Claude read the sheet back to confirm it.
 
 **Draft PR feedback received from:** none. I asked for review in the course Slack channel after opening the draft PR. As of November 26, 2026, no one had replied there, and the PR had no GitHub reviews or comments.
+
+## Unit 10 — Iteration & reflection
+
+### Reviewer feedback
+
+**Feedback received:** [ ] Yes  [x] No — still awaiting review
+
+**Summary of feedback:** I asked for review of PR #116 in the course Slack channel. As of November 26, 2026, no one had replied there, and the PR had no GitHub reviews or comments. The only activity on the PR was the five passing CI checks.
+
+**How you responded:**
+
+---
+
+### Reflection
+
+**What was harder than you expected?**
+Getting the full development environment running was harder than the issue itself. Docker wasn't installed and my Mac had only about 11 GB free, below the 20 GB the setup guide lists, so Claude set up Colima and the Docker CLI through Homebrew instead of Docker Desktop. Even after PostgreSQL, Redis, and the seeded login worked, the pinned `chromadb/chroma:0.4.22` container still crashed with a NumPy 2 error and the frontend tests timed out locally, so I had to separate setup problems from anything my change could cause.
+
+**What did you learn about working in a large codebase?**
+I learned that a green suite in this repo doesn't mean everything works: `make test-unit` passes with 53 strict `xfail` tests that belong to other students' seeded issues, and the contributing guide forbids `ruff check --fix --unsafe-fixes` because it could erase those bugs. Following the existing conventions kept my change small. It stays inside `tests/unit/test_prompt_templates.py`, reuses `get_template()` and the class's `@pytest.mark.unit` setup, and leaves `rag/generator/prompt_templates.py` and every unrelated test untouched.
+
+**How did AI tools help — and where did they fall short?**
+Codex helped me pick issue #12, reproduce the gap by rewording `skills_feedback/v1` in memory, and write PLAN.md, but it hit its usage limit before the implementation was committed. I switched to Claude Code on the same branch, and it kept Codex's uncommitted SHA-256 snapshot change, added the version inventory test, and finished the setup without starting over. Neither tool could replace a human reviewer or my own check of the app, and Claude couldn't get vitest running locally, so I relied on the CI `frontend` job for that part.
+
+**What would you do differently if you started over?**
+I would verify software requirements, disk space, and Docker before starting on an issue. Codex finished Units 7 and 8 while the database, Redis, and seeded login were still unverified, and my Unit 8 blockers had to say full startup was waiting on disk space. Running `docker compose up`, `make migrate`, `make seed`, and a test login on the first day would have settled the setup checkbox before any issue work.
+
+**What are you most proud of from this module?**
+I'm most proud of keeping one focused contribution intact across two AI agents: one fork, one branch, and a code diff limited to `tests/unit/test_prompt_templates.py`. The new tests turned a check that could never fail into one that names the exact prompt that changed. PR #116 passed all five CI jobs (`lint`, `typecheck`, `test-unit`, `test-integration`, and `frontend`) on its first run.
